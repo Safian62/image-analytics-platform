@@ -1,4 +1,4 @@
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/db";
@@ -27,7 +27,7 @@ app.get("/", (req, res) => {
   res.send("API is running...");
 });
 
-app.use((err: any, req: any, res: any, next: any) => {
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   res.status(err.statusCode || 500).json({
     success: false,
     message: err.message || "Internal Server Error",
