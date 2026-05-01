@@ -78,7 +78,6 @@ export const loginUser = CatchAsyncError(async (req: Request, res: Response, nex
         res.status(200).json({
             success: true,
             message: "Login successful",
-            token
         })
     } catch (error: any) {
         return next(new ErrorHandler(error.message, 400))
