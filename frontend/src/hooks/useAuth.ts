@@ -1,10 +1,7 @@
 import { useEffect, useState } from "react";
 import { API } from "../utils/api";
+import type { AuthState } from "../types/types";
 
-export interface AuthState {
-  loading: boolean;
-  isAuth: boolean;
-}
 
 export const useAuth = () => {
   const [authState, setAuthState] = useState<AuthState>({

@@ -7,7 +7,7 @@ const imageRouter = express.Router();
 
 imageRouter.post("/upload", isAuthenticated, upload.single("image"), uploadImage);
 imageRouter.get("/total", isAuthenticated, getTotalImages);
-imageRouter.get("/group", isAuthenticated, groupByLabel);
+imageRouter.get("/group-by-label", isAuthenticated, groupByLabel);
 imageRouter.get("/filter", isAuthenticated, filterByDate);
 imageRouter.get("/all",isAuthenticated, getAllImages);
 

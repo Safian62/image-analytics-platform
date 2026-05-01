@@ -95,3 +95,16 @@ export const getMe = CatchAsyncError(async (req: any, res: Response) => {
         user,
     });
 });
+
+export const logoutUser = CatchAsyncError(async (req: Request, res: Response) => {
+    res.clearCookie("token", {
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax",
+    });
+
+    res.status(200).json({
+        success: true,
+        message: "Logout successful",
+    });
+});
