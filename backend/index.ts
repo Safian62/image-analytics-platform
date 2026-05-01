@@ -36,12 +36,16 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 
 const PORT = process.env.PORT || 5000;
 
-connectDB()
-  // .then(() => {
-  //   app.listen(PORT, () => {
-  //     console.log(`Server running on port ${PORT}`);
-  //   });
-  // })
-  // .catch((err) => {
-  //   console.log("DB connection failed:", err);
-  // });
+// For Vercel serverless deployment
+export default app;
+
+// For local development (commented out for Vercel)
+// connectDB()
+//   .then(() => {
+//     app.listen(PORT, () => {
+//       console.log(`Server running on port ${PORT}`);
+//     });
+//   })
+//   .catch((err) => {
+//     console.log("DB connection failed:", err);
+//   });
