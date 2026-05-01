@@ -39,6 +39,7 @@ const PORT = process.env.PORT || 5000;
 // For Vercel serverless deployment
 export default app;
 
+connectDB()
 // For local development (commented out for Vercel)
 // connectDB()
 //   .then(() => {

@@ -70,8 +70,8 @@ export const loginUser = CatchAsyncError(async (req: Request, res: Response, nex
         );
         res.cookie("token", token, {
             httpOnly: true,
-            secure: false,
-            sameSite: "lax",
+            secure: true,
+            sameSite: "none",
             maxAge: 24 * 60 * 60 * 1000,
         });
 
@@ -98,8 +98,8 @@ export const getMe = CatchAsyncError(async (req: any, res: Response) => {
 export const logoutUser = CatchAsyncError(async (req: Request, res: Response) => {
     res.clearCookie("token", {
         httpOnly: true,
-        secure: false,
-        sameSite: "lax",
+        secure: true,
+        sameSite: "none",
     });
 
     res.status(200).json({
