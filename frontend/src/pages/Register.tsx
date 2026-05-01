@@ -70,7 +70,7 @@ const Register = withAuthRedirect(() => {
 
           <button
             type="submit"
-            className="w-full bg-green-500 text-white py-3 rounded-lg hover:bg-green-600"
+            className="w-full cursor-pointer bg-green-500 text-white py-3 rounded-lg hover:bg-green-600"
             disabled={loading}
           >
             {loading ? "Creating..." : "Register"}

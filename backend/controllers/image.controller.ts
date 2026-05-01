@@ -5,7 +5,7 @@ import streamifier from "streamifier";
 import { CatchAsyncError } from "../middleware/catchAsyncError";
 import ErrorHandler from "../utils/errorHandler";
 import { AuthenticatedRequest } from "../types/express";
-
+import mongoose from "mongoose";
 export const uploadImage = CatchAsyncError(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const file = req.file;
@@ -96,26 +96,35 @@ export const getTotalImages = CatchAsyncError(async (req: AuthenticatedRequest, 
     }
 })
 
-export const groupByLabel = CatchAsyncError(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-        const data = await Image.aggregate([
-            { $match: { user: req.user?.userId } },
-            {
-                $group: {
-                    _id: "$label",
-                    count: { $sum: 1 },
+export const groupByLabel = CatchAsyncError(
+    async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+        try {
+            const data = await Image.aggregate([
+                {
+                    $match: {
+                        user: new mongoose.Types.ObjectId(req.user!.userId),
+                    },
                 },
-            },
-        ]);
+                {
+                    $group: {
+                        _id: "$label",
+                        count: { $sum: 1 },
+                    },
+                },
+                {
+                    $sort: { count: -1 },
+                },
+            ]);
 
-        res.status(200).json({
-            success: true,
-            data,
-        });
-    } catch (error: any) {
-        return next(new ErrorHandler(error.message, 400))
+            res.status(200).json({
+                success: true,
+                data,
+            });
+        } catch (error: any) {
+            return next(new ErrorHandler(error.message, 400));
+        }
     }
-})
+);
 
 export const filterByDate = CatchAsyncError(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
@@ -125,7 +134,7 @@ export const filterByDate = CatchAsyncError(async (req: AuthenticatedRequest, re
         }
         const startStr = (typeof startDate === 'string' ? startDate : Array.isArray(startDate) ? startDate[0] : '') as string;
         const endStr = (typeof endDate === 'string' ? endDate : Array.isArray(endDate) ? endDate[0] : '') as string;
-        
+
         const images = await Image.find({
             user: req.user?.userId,
             createdAt: {

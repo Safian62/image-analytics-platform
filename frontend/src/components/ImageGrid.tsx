@@ -1,38 +1,27 @@
 import { useEffect, useState, useRef } from "react";
-import { API } from "../utils/api";
-import toast from "react-hot-toast";
 import { ImageGridSkeleton } from "./SkeletonLoader";
 import type { Image } from "../types/types";
 
-
-
-const ImageGrid = ({ images, setImages }: { images: Image[]; setImages: (images: Image[]) => void }) => {
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading] = useState(false);
+const ImageGrid = ({
+  images,
+  loading,
+  page,
+  totalPages,
+  hasNextPage,
+  hasPrevPage,
+  onPageChange,
+}: {
+  images: Image[];
+  loading: boolean;
+  page: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+  onPageChange: (pageNum: number) => void;
+}) => {
   const [lazyLoading, setLazyLoading] = useState<Set<string>>(new Set());
   const observerRef = useRef<IntersectionObserver | null>(null);
 
-  const fetchImages = async (pageNum: number) => {
-    try {
-      setLoading(true);
-
-      const res = await API.get(`/image/all?page=${pageNum}&limit=12`, {
-        withCredentials: true,
-      });
-
-      setImages(res.data.images);
-      setTotalPages(res.data.pagination.totalPages);
-      setPage(res.data.pagination.page);
-    } catch (err: unknown) {
-      toast.error("Failed to load images");
-      console.log(err)
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Lazy load images as they enter viewport
   useEffect(() => {
     observerRef.current = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -53,10 +42,6 @@ const ImageGrid = ({ images, setImages }: { images: Image[]; setImages: (images:
     });
 
     return () => observerRef.current?.disconnect();
-  }, []);
-
-  useEffect(() => {
-    fetchImages(1);
   }, []);
 
   return (
@@ -105,9 +90,9 @@ const ImageGrid = ({ images, setImages }: { images: Image[]; setImages: (images:
 
           <div className="flex justify-between items-center mt-6">
             <button
-              onClick={() => fetchImages(page - 1)}
-              disabled={page === 1 || loading}
-              className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-600"
+              onClick={() => onPageChange(page - 1)}
+              disabled={!hasPrevPage || loading}
+              className="px-4 py-2 cursor-pointer bg-blue-500 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-600"
             >
               Prev
             </button>
@@ -117,9 +102,9 @@ const ImageGrid = ({ images, setImages }: { images: Image[]; setImages: (images:
             </p>
 
             <button
-              onClick={() => fetchImages(page + 1)}
-              disabled={page === totalPages || loading}
-              className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-600"
+              onClick={() => onPageChange(page + 1)}
+              disabled={!hasNextPage || loading}
+              className="px-4 cursor-pointer py-2 bg-blue-500 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-600"
             >
               Next
             </button>
