@@ -85,3 +85,13 @@ export const loginUser = CatchAsyncError(async (req: Request, res: Response, nex
 
     }
 })
+
+
+export const getMe = CatchAsyncError(async (req: any, res: Response) => {
+    const user = await User.findById(req.user.userId).select("-password");
+
+    res.status(200).json({
+        success: true,
+        user,
+    });
+});
