@@ -229,7 +229,116 @@ image-analytics-platform/
 - Configure MongoDB Atlas for database
 - Set `secure: true` for cookies in HTTPS environments
 
-## 🤝 Contributing
+## � System Architecture
+
+The Image Analytics Platform is built as a decoupled web application with two main services:
+
+- **Frontend**: React + Vite application handles user authentication, image uploads, dashboard visualization, pagination, and analytics charts.
+- **Backend**: Express + TypeScript API handles authentication, image metadata persistence, Cloudinary uploads, analytics aggregation, and protected API routes.
+- **Database**: MongoDB stores user data and image metadata.
+
+Data flow:
+1. User logs in or registers in the frontend.
+2. Frontend sends credentials to backend using `axios` with `withCredentials` enabled.
+3. Backend authenticates and issues a JWT token via HTTP-only cookie.
+4. Frontend requests protected image and analytics data via authenticated API calls.
+5. Image uploads are streamed to Cloudinary and metadata is stored in MongoDB.
+
+## 🧠 Design Decisions
+
+- **JWT + HTTP-only cookie auth**: Chosen for stateless session handling and extra protection against XSS.
+- **Cloudinary**: Used to offload binary image storage and optimize delivery, keeping MongoDB limited to metadata.
+- **Server-side pagination**: Implemented to efficiently handle large image lists and reduce payload sizes.
+- **Analytics endpoints**: Backend provides label aggregation and total count, while the daily upload trend is built from image timestamps.
+- **React + Recharts**: Selected for responsive dashboard visuals and quick development of charts.
+
+## ⚠️ Assumptions & Limitations
+
+- This system is built for a single non-role-based user model; no admin/user roles are implemented.
+- Image deletion and update endpoints are not included.
+- Local development uses cross-origin frontend and backend communication.
+- For production, the cookie configuration uses `secure: true` and `sameSite: none`.
+  - This means local HTTP development may require either a same-origin setup, an HTTPS local environment, or a proxy.
+- There are no automated unit tests currently included in the repository.
+
+## 📘 API Documentation
+
+### Authentication
+
+#### `POST /api/user/register`
+- Request body: `{ name, email, password }`
+- Response: `{ success: true, message: 'User created successfully' }`
+
+#### `POST /api/user/login`
+- Request body: `{ email, password }`
+- Response: `{ success: true, message: 'Login successful' }`
+- Side effect: sets `token` cookie for authenticated sessions
+
+#### `POST /api/user/logout`
+- Protected route
+- Response: `{ success: true, message: 'Logout successful' }`
+- Side effect: clears auth cookie
+
+#### `GET /api/user/me`
+- Protected route
+- Response: `{ success: true, user }`
+
+### Image Management
+
+#### `POST /api/image/upload`
+- Protected route
+- Request: `multipart/form-data` with fields `image` and optional `label`
+- Response: `{ success: true, image }`
+
+#### `GET /api/image/all?page=&limit=`
+- Protected route
+- Query params:
+  - `page` (default `1`)
+  - `limit` (default `10`)
+- Response: `{ success: true, images, pagination }`
+
+#### `GET /api/image/total`
+- Protected route
+- Response: `{ success: true, totalImages }`
+
+### Analytics
+
+#### `GET /api/image/group-by-label`
+- Protected route
+- Response: `{ success: true, data }`
+- `data` is aggregated by label and includes counts for each label.
+
+#### `GET /api/image/filter?startDate=&endDate=`
+- Protected route
+- Query params:
+  - `startDate` (ISO date string)
+  - `endDate` (ISO date string)
+- Response: `{ success: true, images }`
+
+## 🧩 Docker Setup (Updated)
+
+The repository includes Docker support for both frontend and backend.
+
+### Using Docker Compose
+1. Create `.env` files in both `backend` and `frontend` folders, or ensure `.env.example` is copied and filled.
+2. Run:
+```bash
+docker compose up --build
+```
+3. Access the frontend at `http://localhost:5173` and the backend at `http://localhost:5000`.
+
+### Notes
+- The backend uses `backend/.env` for MongoDB credentials, Cloudinary keys, JWT secret, and allowed origin.
+- The frontend uses `frontend/.env` for `VITE_API_URL`.
+
+## 🔒 Authentication / Security
+
+- JWT tokens are stored in an HTTP-only cookie to protect against XSS.
+- The backend configures cookies as `secure` in production and `sameSite=none` in production as required for cross-origin browser contexts.
+- For local development, the backend uses `sameSite=lax` and `secure=false` to avoid blocking cookie delivery in non-HTTPS environments.
+- If the frontend and backend are served from different hosts over HTTP, cross-site cookies may still require a secure/HTTPS setup or a local proxy.
+
+## �🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/amazing-feature`
